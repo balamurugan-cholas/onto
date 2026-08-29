@@ -6,8 +6,8 @@ import ContactPage from './components/ContactPage'
 import TestimonialsPage from './components/TestimonialsPage'
 import { useResponsive } from './hooks/useResponsive'
 
-const PADDLE_SANDBOX_TOKEN = 'test_5b12816b8b46c3cb81bff67785c'
-const VPLAY_SANDBOX_PRICE_ID = 'pri_01m14cd2ca834jewqsqt75w1sz'
+const PADDLE_LIVE_TOKEN = 'live_54ff1764490ca5baad198bbae59'
+const VPLAY_LIVE_PRICE_ID = 'pri_01m15mhh168qw8gxjs6fcb6mxw'
 const VPLAY_DOWNLOAD_WORKER = 'https://vplay-download.balamuruganofficial3.workers.dev'
 
 interface CartItem {
@@ -88,9 +88,8 @@ export default function App() {
         return
       }
       if (!(window as any).__ontoPaddleInitialized) {
-        paddle.Environment.set('sandbox')
         paddle.Initialize({
-          token: PADDLE_SANDBOX_TOKEN,
+          token: PADDLE_LIVE_TOKEN,
           eventCallback: (event: { name?: string; data?: { transaction_id?: string } }) => {
             if (event?.name === 'checkout.completed') {
               window.dispatchEvent(new CustomEvent('onto:paddle-checkout-completed', {
@@ -140,7 +139,7 @@ export default function App() {
       return
     }
     paddle.Checkout.open({
-      items: [{ priceId: VPLAY_SANDBOX_PRICE_ID, quantity: 1 }],
+      items: [{ priceId: VPLAY_LIVE_PRICE_ID, quantity: 1 }],
       customData: { product: 'vplay', source: 'onto-website' },
       settings: {
         displayMode: 'overlay',
