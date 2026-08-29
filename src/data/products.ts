@@ -15,6 +15,8 @@ export interface Product {
 
 export const ACCENT = '#000000'
 
+const publicAsset = (name: string) => `${import.meta.env.BASE_URL}${name}`
+
 export const products: Product[] = [
   /* PremiereBind is hidden until it is ready for sale.
   {
@@ -36,7 +38,7 @@ export const products: Product[] = [
       'Organize with profiles, folders, and Audio Randomizer folders',
       'Works across projects and after restarting Premiere Pro',
     ],
-    img: '/premiere-bind.png',
+    img: publicAsset('premiere-bind.png'),
   },
   */
   {
@@ -59,6 +61,6 @@ export const products: Product[] = [
       'History panel with thumbnails, format, and platform filters, plus one-click redownload so you never lose track of where a clip came from',
       'Customizable save location in settings — choose exactly where downloads go',
     ],
-    img: '/vplay.png',
+    img: publicAsset('vplay.png'),
   },
 ]

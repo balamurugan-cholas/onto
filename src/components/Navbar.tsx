@@ -128,7 +128,7 @@ export default function Navbar({ view, cartCount, onCartClick, onContactClick, o
         flexShrink: 0,
       }}
     >
-      <img src="/store-logo.png" alt="ONTO" style={{ height: isMobile ? '28px' : '36px', width: 'auto' }} />
+      <img src={`${import.meta.env.BASE_URL}store-logo.png`} alt="ONTO" style={{ height: isMobile ? '28px' : '36px', width: 'auto' }} />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
         {isSubView ? (
