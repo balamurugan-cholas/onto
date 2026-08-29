@@ -1,0 +1,10 @@
+{
+  "description": "Discover and purchase Premiere Pro plugins in a streamlined, single-page store featuring a manual carousel for showcasing products.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
