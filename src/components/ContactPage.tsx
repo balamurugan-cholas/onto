@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
 
-type Status = 'idle' | 'sending' | 'sent'
+type Status = 'idle' | 'sending' | 'sent' | 'error'
+const CONTACT_ENDPOINT = 'https://vplay-download.balamuruganofficial3.workers.dev/contact'
+const SUPPORT_EMAIL = 'balamuruganofficial3@gmail.com'
 
 function inputStyle(focused: boolean): React.CSSProperties {
   return {
@@ -51,10 +53,20 @@ export default function ContactPage() {
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }))
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('sending')
-    setTimeout(() => setStatus('sent'), 1400)
+    try {
+      const response = await fetch(CONTACT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ ...form, website: '' }),
+      })
+      if (!response.ok) throw new Error('Message delivery failed')
+      setStatus('sent')
+    } catch {
+      setStatus('error')
+    }
   }
 
   if (status === 'sent') return <SentState />
@@ -106,11 +118,7 @@ export default function ContactPage() {
           {[
             {
               icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>,
-              label: 'EMAIL', value: 'hello@onto.studio',
-            },
-            {
-              icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>,
-              label: 'DISCORD', value: 'discord.gg/onto',
+              label: 'EMAIL', value: SUPPORT_EMAIL,
             },
             {
               icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
@@ -121,7 +129,11 @@ export default function ContactPage() {
               <div style={{ marginTop: '1px', flexShrink: 0 }}>{icon}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <span style={{ color: 'rgba(0,0,0,0.52)', fontSize: '0.56rem', letterSpacing: '0.14em', fontWeight: 600 }}>{label}</span>
-                <span style={{ color: '#000000', fontSize: '0.8rem', fontWeight: 600 }}>{value}</span>
+                {label === 'EMAIL' ? (
+                  <a href={`mailto:${value}`} style={{ color: '#000000', fontSize: '0.8rem', fontWeight: 600 }}>{value}</a>
+                ) : (
+                  <span style={{ color: '#000000', fontSize: '0.8rem', fontWeight: 600 }}>{value}</span>
+                )}
               </div>
             </div>
           ))}
@@ -244,6 +256,12 @@ export default function ContactPage() {
         >
           {status === 'sending' ? 'SENDING…' : 'SEND MESSAGE'}
         </button>
+        {status === 'error' && (
+          <p role="alert" style={{ margin: 0, color: '#a40000', fontSize: '0.75rem', textAlign: 'right' }}>
+            Message could not be delivered. Email us directly at{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+          </p>
+        )}
       </form>
     </div>
   )

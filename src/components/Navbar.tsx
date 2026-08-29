@@ -2,7 +2,7 @@
 import { ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
 
-export type View = 'store' | 'cart' | 'contact' | 'testimonials' | 'checkout'
+export type View = 'store' | 'cart' | 'contact' | 'testimonials' | 'checkout' | 'terms' | 'privacy' | 'refund'
 
 interface NavbarProps {
   view: View

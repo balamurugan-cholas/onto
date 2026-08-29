@@ -5,6 +5,8 @@ import CartPage from './components/CartPage'
 import ContactPage from './components/ContactPage'
 import TestimonialsPage from './components/TestimonialsPage'
 import { useResponsive } from './hooks/useResponsive'
+import LegalPage, { type LegalView } from './components/LegalPage'
+import LegalFooter from './components/LegalFooter'
 
 const PADDLE_LIVE_TOKEN = 'live_54ff1764490ca5baad198bbae59'
 const VPLAY_LIVE_PRICE_ID = 'pri_01m15mhh168qw8gxjs6fcb6mxw'
@@ -15,6 +17,8 @@ interface CartItem {
   qty: number
 }
 
+const LEGAL_VIEWS: LegalView[] = ['terms', 'privacy', 'refund']
+
 export default function App() {
   const { isMobile } = useResponsive()
   const [view, setView] = useState<View>('store')
@@ -23,6 +27,22 @@ export default function App() {
   const [downloadStatus, setDownloadStatus] = useState('')
   const [completedTransactionId, setCompletedTransactionId] = useState('')
   const [downloadInProgress, setDownloadInProgress] = useState(false)
+
+  const navigate = (nextView: View) => {
+    setView(nextView)
+    const nextHash = LEGAL_VIEWS.includes(nextView as LegalView) ? `#/${nextView}` : ''
+    window.history.pushState(null, '', nextHash || window.location.pathname)
+  }
+
+  useEffect(() => {
+    const syncHash = () => {
+      const requested = window.location.hash.replace(/^#\//, '') as LegalView
+      if (LEGAL_VIEWS.includes(requested)) setView(requested)
+    }
+    syncHash()
+    window.addEventListener('hashchange', syncHash)
+    return () => window.removeEventListener('hashchange', syncHash)
+  }, [])
 
   const prepareDownload = async (transactionId: string) => {
     setDownloadInProgress(true)
@@ -184,10 +204,10 @@ export default function App() {
       <Navbar
         view={view}
         cartCount={cartCount}
-        onCartClick={() => setView('cart')}
-        onContactClick={() => setView('contact')}
-        onTestimonialsClick={() => setView('testimonials')}
-        onBackClick={() => setView('store')}
+        onCartClick={() => navigate('cart')}
+        onContactClick={() => navigate('contact')}
+        onTestimonialsClick={() => navigate('testimonials')}
+        onBackClick={() => navigate('store')}
       />
 
       {view === 'store' && (
@@ -208,6 +228,9 @@ export default function App() {
       )}
       {view === 'contact' && <ContactPage />}
       {view === 'testimonials' && <TestimonialsPage />}
+      {LEGAL_VIEWS.includes(view as LegalView) && <LegalPage type={view as LegalView} />}
+
+      <LegalFooter onNavigate={navigate} />
 
       {completedTransactionId && !isMobile && (
         <button
