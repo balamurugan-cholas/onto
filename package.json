@@ -8,6 +8,7 @@
     "build": "vite build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist --nojekyll --no-history --before-add ./scripts/gh-pages-before-add.cjs",
+    "deploy:root": "vite build --base / && gh-pages -d dist --repo https://github.com/balamurugan-cholas/balamurugan-cholas.github.io.git --branch main --nojekyll --no-history --before-add ./scripts/gh-pages-before-add.cjs",
     "preview": "vite preview",
     "format": "oxfmt"
   },
