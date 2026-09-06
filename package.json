@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:sandbox": "vite --mode sandbox --host 127.0.0.1 --port 8444",
+    "build:sandbox": "vite build --mode sandbox --outDir build/sandbox",
     "build": "vite build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist --nojekyll --no-history --before-add ./scripts/gh-pages-before-add.cjs",

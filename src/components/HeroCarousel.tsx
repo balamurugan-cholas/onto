@@ -3,7 +3,6 @@ import { products } from '../data/products'
 import { ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
 import ProductSlide from './ProductSlide'
-import Marquee from './Marquee'
 
 interface HeroCarouselProps {
   onAddToCart: (productId: number) => void
@@ -81,6 +80,7 @@ export default function HeroCarousel({
   )
 
   const p = products[current]
+  const canDownload = showRetryDownload && p.id === 2
 
   return (
     <>
@@ -89,8 +89,8 @@ export default function HeroCarousel({
           product={p}
           visible={!transitioning}
           slideDir={slideDir}
-          onAddToCart={() => onAddToCart(p.id)}
-          showRetryDownload={showRetryDownload}
+          onAddToCart={() => canDownload ? onRetryDownload() : onAddToCart(p.id)}
+          showRetryDownload={canDownload}
           downloadInProgress={downloadInProgress}
           onRetryDownload={onRetryDownload}
         />
@@ -123,8 +123,8 @@ export default function HeroCarousel({
             }}
           >
             <button
-              onClick={() => onAddToCart(p.id)}
-              disabled={p.comingSoon}
+              onClick={() => canDownload ? onRetryDownload() : onAddToCart(p.id)}
+              disabled={p.comingSoon || (canDownload && downloadInProgress)}
               style={{
                 padding: '8px 16px',
                 border: '1.5px solid #000000',
@@ -143,7 +143,7 @@ export default function HeroCarousel({
               onMouseEnter={(e) => { if (!p.comingSoon) e.currentTarget.style.opacity = '0.85' }}
               onMouseLeave={(e) => { if (!p.comingSoon) e.currentTarget.style.opacity = '1' }}
             >
-              {p.comingSoon ? 'Coming Soon' : 'Add to Cart'}
+              {canDownload ? (downloadInProgress ? 'Preparing download…' : 'Download Again') : p.comingSoon ? 'Coming Soon' : 'Add to Cart'}
             </button>
             <span style={{ fontFamily: "'Anton', sans-serif", fontSize: '1.5rem', color: '#111111', lineHeight: 1 }}>
               {p.comingSoon ? '' : `$${p.price}`}
@@ -191,7 +191,6 @@ export default function HeroCarousel({
         </div>
       </div>
 
-      <Marquee names={products.map((prod) => prod.slug)} />
     </>
   )
 }

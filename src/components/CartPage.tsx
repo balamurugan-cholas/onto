@@ -1,5 +1,6 @@
 import { products, ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
+import type { DownloadPlatform } from './PlatformModal'
 
 interface CartItem {
   productId: number
@@ -11,6 +12,7 @@ interface CartPageProps {
   onUpdateQty: (productId: number, qty: number) => void
   onRemove: (productId: number) => void
   onCheckout: () => void
+  downloadPlatform: DownloadPlatform
 }
 
 function EmptyState() {
@@ -25,7 +27,7 @@ function EmptyState() {
   )
 }
 
-export default function CartPage({ cartItems, onUpdateQty, onRemove, onCheckout }: CartPageProps) {
+export default function CartPage({ cartItems, onUpdateQty, onRemove, onCheckout, downloadPlatform }: CartPageProps) {
   const { isMobile } = useResponsive()
 
   const lineItems = cartItems
@@ -58,7 +60,7 @@ export default function CartPage({ cartItems, onUpdateQty, onRemove, onCheckout 
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
           <span style={{ fontFamily: "'Anton', sans-serif", fontSize: isMobile ? '0.95rem' : '1.05rem', color: '#111111', letterSpacing: '-0.01em' }}>{p.slug}</span>
-          <span style={{ fontSize: '0.67rem', color: 'rgba(0,0,0,0.55)', fontWeight: 500, letterSpacing: '0.04em' }}>{p.host} · {p.license}</span>
+          <span style={{ fontSize: '0.67rem', color: 'rgba(0,0,0,0.55)', fontWeight: 500, letterSpacing: '0.04em' }}>{p.host} · {downloadPlatform === 'mac' ? 'macOS' : 'Windows'} · {p.license}</span>
         </div>
       </div>
 

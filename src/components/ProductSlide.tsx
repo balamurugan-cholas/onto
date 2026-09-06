@@ -19,9 +19,10 @@ export default function ProductSlide({
   onAddToCart,
   showRetryDownload,
   downloadInProgress,
-  onRetryDownload,
 }: ProductSlideProps) {
   const { isMobile, isTablet } = useResponsive()
+  const actionLabel = showRetryDownload ? (downloadInProgress ? 'Preparing download…' : 'Download Again') : p.comingSoon ? 'Coming Soon' : 'Add to Cart'
+  const actionDisabled = p.comingSoon || (showRetryDownload && downloadInProgress)
 
   const fade: React.CSSProperties = {
     opacity: visible ? 1 : 0,
@@ -60,29 +61,6 @@ export default function ProductSlide({
                 {p.slug}
               </h1>
             </div>
-            {showRetryDownload && (
-              <button
-                type="button"
-                disabled={downloadInProgress}
-                onClick={onRetryDownload}
-                style={{
-                  height: 41,
-                  padding: '0 14px',
-                  border: '1.5px solid #000000',
-                  borderRadius: 0,
-                  background: downloadInProgress ? '#666' : '#000000',
-                  color: '#FFFFFF',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  fontFamily: "'DM Sans', sans-serif",
-                  whiteSpace: 'nowrap',
-                  cursor: downloadInProgress ? 'wait' : 'pointer',
-                  flexShrink: 0,
-                }}
-              >
-                {downloadInProgress ? 'Preparing…' : 'Retry download'}
-              </button>
-            )}
           </div>
           <span style={{ background: '#000000', color: '#FFFFFF', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em', padding: '3px 8px', display: 'inline-block', alignSelf: 'flex-start' }}>
             {p.version}
@@ -158,8 +136,8 @@ export default function ProductSlide({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
             <span style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.2rem', color: '#111111' }}>{p.comingSoon ? '' : `$${p.price}`}</span>
-            <button onClick={onAddToCart} disabled={p.comingSoon} style={{ padding: '9px 24px', border: '1.5px solid #000000', background: 'transparent', color: '#000000', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.06em', cursor: p.comingSoon ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s', opacity: p.comingSoon ? 0.6 : 1 }} onMouseEnter={(e) => { if (!p.comingSoon) { e.currentTarget.style.background = '#000000'; e.currentTarget.style.color = '#FFFFFF' } }} onMouseLeave={(e) => { if (!p.comingSoon) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#000000' } }}>
-              {p.comingSoon ? 'Coming Soon' : 'Add to Cart'}
+            <button onClick={onAddToCart} disabled={actionDisabled} style={{ padding: '9px 24px', border: '1.5px solid #000000', background: 'transparent', color: '#000000', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.06em', cursor: actionDisabled ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s', opacity: actionDisabled ? 0.6 : 1 }}>
+              {actionLabel}
             </button>
           </div>
         </div>
@@ -202,8 +180,8 @@ export default function ProductSlide({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
           <span style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.6rem', color: '#111111' }}>{p.comingSoon ? '' : `$${p.price}`}</span>
-          <button onClick={onAddToCart} disabled={p.comingSoon} style={{ padding: '10px 28px', border: '1.5px solid #000000', background: 'transparent', color: '#000000', fontSize: '0.82rem', fontWeight: 600, letterSpacing: '0.06em', cursor: p.comingSoon ? 'default' : 'pointer', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif", opacity: p.comingSoon ? 0.6 : 1 }} onMouseEnter={(e) => { if (!p.comingSoon) { e.currentTarget.style.background = '#000000'; e.currentTarget.style.color = '#FFFFFF' } }} onMouseLeave={(e) => { if (!p.comingSoon) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#000000' } }}>
-            {p.comingSoon ? 'Coming Soon' : 'Add to Cart'}
+          <button onClick={onAddToCart} disabled={actionDisabled} style={{ padding: '10px 28px', border: '1.5px solid #000000', background: 'transparent', color: '#000000', fontSize: '0.82rem', fontWeight: 600, letterSpacing: '0.06em', cursor: actionDisabled ? 'default' : 'pointer', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif", opacity: actionDisabled ? 0.6 : 1 }}>
+            {actionLabel}
           </button>
         </div>
       </div>

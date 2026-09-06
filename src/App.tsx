@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Navbar, { type View } from './components/Navbar'
 import HeroCarousel from './components/HeroCarousel'
 import CartPage from './components/CartPage'
@@ -7,10 +7,15 @@ import TestimonialsPage from './components/TestimonialsPage'
 import { useResponsive } from './hooks/useResponsive'
 import LegalPage, { type LegalView } from './components/LegalPage'
 import LegalFooter from './components/LegalFooter'
+import { products } from './data/products'
+import { loadPurchase, savePurchase, validTransactionId } from './lib/purchaseStorage'
+import { getPaddleConfig } from './lib/paddleConfig'
+import { waitForDownload } from './lib/downloadClaim'
+import PlatformModal, { type DownloadPlatform } from './components/PlatformModal'
+import { detectDownloadPlatform } from './lib/platformDetection'
 
-const PADDLE_LIVE_TOKEN = 'live_54ff1764490ca5baad198bbae59'
-const VPLAY_LIVE_PRICE_ID = 'pri_01m15mhh168qw8gxjs6fcb6mxw'
-const VPLAY_DOWNLOAD_WORKER = 'https://vplay-download.balamuruganofficial3.workers.dev'
+const paymentConfig = getPaddleConfig(import.meta.env.MODE, import.meta.env.VITE_SANDBOX_WORKER_URL || '')
+const VPLAY_DOWNLOAD_WORKER = paymentConfig.workerUrl
 
 interface CartItem {
   productId: number
@@ -25,8 +30,32 @@ export default function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [paddleReady, setPaddleReady] = useState(false)
   const [downloadStatus, setDownloadStatus] = useState('')
-  const [completedTransactionId, setCompletedTransactionId] = useState('')
+  const [completedTransactionId, setCompletedTransactionId] = useState(() => loadPurchase(undefined, paymentConfig.environment))
+  const downloadBusy = useRef(false)
   const [downloadInProgress, setDownloadInProgress] = useState(false)
+  const [platformModalOpen, setPlatformModalOpen] = useState(false)
+  const [pendingProductId, setPendingProductId] = useState<number | null>(null)
+  const [downloadPlatform, setDownloadPlatform] = useState<DownloadPlatform>(() => detectDownloadPlatform() || 'windows')
+
+  const activateLocalAgent = async (licenseKey: string) => {
+    const deadline = Date.now() + 10 * 60 * 1000
+    const attempt = async (): Promise<void> => {
+      try {
+        const response = await fetch('http://127.0.0.1:43115/license/activate', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ licenseKey }),
+        })
+        if (response.ok) {
+          return
+        }
+      } catch {
+        // The freshly downloaded agent may not be installed or running yet.
+      }
+      if (Date.now() < deadline) window.setTimeout(attempt, 3000)
+    }
+    await attempt()
+  }
 
   const navigate = (nextView: View) => {
     setView(nextView)
@@ -44,44 +73,41 @@ export default function App() {
     return () => window.removeEventListener('hashchange', syncHash)
   }, [])
 
-  const prepareDownload = async (transactionId: string) => {
+  const prepareDownload = async (transactionId: string, newPurchase = false) => {
+    if (!VPLAY_DOWNLOAD_WORKER) {
+      setDownloadStatus('Sandbox download Worker is not configured yet. No live download request was made.')
+      return
+    }
+    if (downloadBusy.current || !validTransactionId(transactionId)) return
+    downloadBusy.current = true
     setDownloadInProgress(true)
     setDownloadStatus(
-      'Payment successful — verifying your order and preparing the download…',
+      'Checking your purchase and preparing a fresh download link…',
     )
 
-    for (let attempt = 0; attempt < 120; attempt += 1) {
-      try {
-        const response = await fetch(`${VPLAY_DOWNLOAD_WORKER}/claim`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ transactionId }),
+    try {
+        const result = await waitForDownload(VPLAY_DOWNLOAD_WORKER, transactionId, newPurchase, {
+          onProgress: setDownloadStatus,
         })
-        const result = await response.json() as {
-          ok?: boolean
-          pending?: boolean
-          downloadUrl?: string
-        }
-
-        if (response.ok && result.ok && result.downloadUrl) {
+        if (result.downloadUrl) {
+          savePurchase(transactionId, undefined, paymentConfig.environment)
+          setCompletedTransactionId(transactionId)
+          if (result.licenseKey) {
+            if (!paymentConfig.sandbox) void activateLocalAgent(result.licenseKey)
+          }
           setDownloadStatus('Your download is starting…')
           window.location.assign(result.downloadUrl)
           window.setTimeout(() => setDownloadStatus(''), 1200)
           setDownloadInProgress(false)
+          downloadBusy.current = false
           return
         }
-        if (response.status === 400 || response.status === 403) break
-      } catch {
-        // Retry briefly while Paddle's verified webhook reaches the Worker.
-      }
-
-      await new Promise((resolve) => window.setTimeout(resolve, 1500))
+    } catch (error) {
+      setDownloadStatus(error instanceof Error ? error.message : 'Download interrupted. Please use Download Again; no new payment is needed.')
+    } finally {
+      setDownloadInProgress(false)
+      downloadBusy.current = false
     }
-
-    setDownloadInProgress(false)
-    setDownloadStatus(
-      'Payment succeeded, but the download could not start automatically. Use Retry download below.',
-    )
   }
 
   useEffect(() => {
@@ -90,12 +116,14 @@ export default function App() {
       setView('store')
 
       const transactionId = (event as CustomEvent<{ transactionId?: string }>).detail?.transactionId
-      if (!transactionId) {
+      if (!validTransactionId(transactionId)) {
         setDownloadStatus('Payment succeeded. Please contact support for your download link.')
         return
       }
       setCompletedTransactionId(transactionId)
-      void prepareDownload(transactionId)
+      // Save before the automatic download, so cancelling/reloading is recoverable.
+      savePurchase(transactionId, undefined, paymentConfig.environment)
+      void prepareDownload(transactionId, true)
     }
     window.addEventListener('onto:paddle-checkout-completed', handleCompleted)
 
@@ -108,8 +136,9 @@ export default function App() {
         return
       }
       if (!(window as any).__ontoPaddleInitialized) {
+        if (paymentConfig.sandbox) paddle.Environment.set('sandbox')
         paddle.Initialize({
-          token: PADDLE_LIVE_TOKEN,
+          token: paymentConfig.token,
           eventCallback: (event: { name?: string; data?: { transaction_id?: string } }) => {
             if (event?.name === 'checkout.completed') {
               window.dispatchEvent(new CustomEvent('onto:paddle-checkout-completed', {
@@ -120,7 +149,9 @@ export default function App() {
           },
         })
         ;(window as any).__ontoPaddleInitialized = true
+        ;(window as any).__ontoPaddleEnvironment = paymentConfig.environment
       }
+      if ((window as any).__ontoPaddleEnvironment !== paymentConfig.environment) return
       setPaddleReady(true)
     }
     initialize()
@@ -130,13 +161,32 @@ export default function App() {
 
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0)
 
-  const addToCart = (productId: number) => {
+  const commitToCart = (productId: number) => {
     setCartItems((prev) => {
       const existing = prev.find((i) => i.productId === productId)
       return existing
         ? prev.map((i) => (i.productId === productId ? { ...i, qty: i.qty + 1 } : i))
         : [...prev, { productId, qty: 1 }]
     })
+  }
+
+  const addToCart = (productId: number) => {
+    const detectedPlatform = detectDownloadPlatform()
+    if (detectedPlatform) {
+      setDownloadPlatform(detectedPlatform)
+      commitToCart(productId)
+      return
+    }
+    setPendingProductId(productId)
+    setPlatformModalOpen(true)
+  }
+
+  const choosePlatform = (platform: DownloadPlatform) => {
+    if (pendingProductId === null) return
+    setDownloadPlatform(platform)
+    commitToCart(pendingProductId)
+    setPendingProductId(null)
+    setPlatformModalOpen(false)
   }
 
   const updateQty = (productId: number, qty: number) => {
@@ -148,6 +198,10 @@ export default function App() {
   }
 
   const openPaddleCheckout = () => {
+    if (paymentConfig.sandbox && !VPLAY_DOWNLOAD_WORKER) {
+      window.alert('Sandbox checkout is not ready: configure the separate sandbox download Worker first.')
+      return
+    }
     const paddle = (window as any).Paddle
     const hasVPlay = cartItems.some((item) => item.productId === 2)
     if (!paddleReady || !paddle) {
@@ -159,8 +213,8 @@ export default function App() {
       return
     }
     paddle.Checkout.open({
-      items: [{ priceId: VPLAY_LIVE_PRICE_ID, quantity: 1 }],
-      customData: { product: 'vplay', source: 'onto-website' },
+      items: [{ priceId: paymentConfig.priceId, quantity: 1 }],
+      customData: { product: 'vplay', source: 'onto-website', platform: downloadPlatform },
       settings: {
         displayMode: 'overlay',
         theme: 'light',
@@ -201,6 +255,7 @@ export default function App() {
         }}
       />
 
+      {paymentConfig.sandbox && <div style={{ position: 'relative', zIndex: 30, flexShrink: 0, padding: '7px 12px', background: '#ffe4a3', color: '#382800', textAlign: 'center', fontSize: 12 }}>SANDBOX — no real payments. {VPLAY_DOWNLOAD_WORKER ? 'Test purchases stay separate from live.' : 'Waiting for sandbox Worker setup.'}</div>}
       <Navbar
         view={view}
         cartCount={cartCount}
@@ -224,71 +279,42 @@ export default function App() {
           onUpdateQty={updateQty}
           onRemove={removeItem}
           onCheckout={openPaddleCheckout}
+          downloadPlatform={downloadPlatform}
         />
       )}
       {view === 'contact' && <ContactPage />}
       {view === 'testimonials' && <TestimonialsPage />}
       {LEGAL_VIEWS.includes(view as LegalView) && <LegalPage type={view as LegalView} />}
 
-      <LegalFooter onNavigate={navigate} />
+      <LegalFooter onNavigate={navigate} marqueeNames={view === 'store' ? products.map((product) => product.slug) : undefined} />
 
-      {completedTransactionId && !isMobile && (
-        <button
-          type="button"
-          disabled={downloadInProgress}
-          onClick={() => void prepareDownload(completedTransactionId)}
-          style={{
-            position: 'fixed',
-            left: 64,
-            bottom: 48,
-            zIndex: 9999,
-            height: 34,
-            padding: '0 16px',
-            border: 0,
-            borderRadius: 0,
-            color: '#fff',
-            background: downloadInProgress ? '#666' : '#111',
-            fontWeight: 700,
-            cursor: downloadInProgress ? 'wait' : 'pointer',
-          }}
-        >
-          {downloadInProgress ? 'Preparing download…' : 'Retry download'}
-        </button>
-      )}
+      <PlatformModal
+        open={platformModalOpen}
+        onClose={() => { setPlatformModalOpen(false); setPendingProductId(null) }}
+        onSelect={choosePlatform}
+      />
 
       {downloadStatus && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Download status"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 10000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
-            background: 'rgba(0,0,0,0.38)',
-            backdropFilter: 'blur(4px)',
-          }}
+          className="download-status-backdrop"
         >
-          <div
-            role="status"
-            style={{
-              maxWidth: 520,
-              width: '100%',
-              padding: '26px 28px',
-              borderRadius: 14,
-              color: '#fff',
-              background: '#111',
-              boxShadow: '0 22px 70px rgba(0,0,0,0.35)',
-              textAlign: 'center',
-              fontSize: 15,
-              lineHeight: 1.55,
-            }}
-          >
-            {downloadStatus}
+          <div role="status" aria-live="polite" className="download-status-card">
+            <div className={`download-status-mark${downloadInProgress ? ' is-loading' : ''}`} aria-hidden="true">
+              {downloadInProgress ? <span /> : '!'}
+            </div>
+            <div className="download-status-content">
+              <span className="download-status-kicker">VPLAY INSTALLER</span>
+              <h2>{downloadInProgress ? 'Preparing your download' : 'Download needs attention'}</h2>
+              <p>{downloadStatus}</p>
+            </div>
+            {downloadInProgress ? (
+              <div className="download-status-progress" aria-hidden="true"><span /></div>
+            ) : (
+              <button type="button" className="download-status-close" onClick={() => setDownloadStatus('')}>Close</button>
+            )}
           </div>
         </div>
       )}

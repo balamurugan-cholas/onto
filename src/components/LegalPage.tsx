@@ -8,7 +8,7 @@ const policies: Record<LegalView, { title: string; sections: Array<{ heading: st
     title: 'Terms of Service',
     sections: [
       { heading: 'Agreement', body: 'These Terms govern your purchase and use of VPlay, a downloadable plugin sold by ONTO. By purchasing, downloading, or using VPlay, you agree to these Terms.' },
-      { heading: 'License', body: 'A completed purchase grants you a limited, non-exclusive, non-transferable license to install and use VPlay for your own editing work. You may not resell, redistribute, share, reverse engineer, or provide the installer or download access to another person.' },
+      { heading: 'License', body: 'A completed purchase grants you a limited, non-exclusive, non-transferable license to install and use VPlay on your own computers for your own editing work. You may not resell, redistribute, share, reverse engineer, or provide the installer or download access to another person.' },
       { heading: 'Product and compatibility', body: 'VPlay is intended for the supported versions of Adobe Premiere Pro and operating systems described on the product page. Third-party platforms may change their services without notice, which can temporarily affect individual download features.' },
       { heading: 'Payments and delivery', body: 'Payments are processed by Paddle, our merchant of record. After Paddle confirms a completed transaction, the website provides access to the VPlay installer. Prices and included updates are shown on the product page before checkout.' },
       { heading: 'Updates and support', body: 'Updates included with a lifetime license are provided for the lifetime of the VPlay product. This does not guarantee that every third-party platform or future host application version will remain supported.' },
@@ -20,7 +20,7 @@ const policies: Record<LegalView, { title: string; sections: Array<{ heading: st
   privacy: {
     title: 'Privacy Policy',
     sections: [
-      { heading: 'Information we handle', body: 'ONTO may receive information you provide when contacting support and limited purchase information needed to verify access, such as a Paddle transaction identifier and product identifier. We do not receive or store your complete payment-card details.' },
+      { heading: 'Information we handle', body: 'ONTO may receive information you provide when contacting support and limited purchase information needed to deliver access, such as a Paddle transaction identifier, product identifier, and selected installer platform. We do not receive or store your complete payment-card details.' },
       { heading: 'Payments', body: 'Paddle processes checkout, taxes, payment details, receipts, and related customer information as our merchant of record. Paddle handles that information under its own privacy policy.' },
       { heading: 'How information is used', body: 'We use information only to verify purchases, deliver VPlay, provide support, prevent fraud or abuse, maintain the service, and comply with legal obligations.' },
       { heading: 'Service providers', body: 'The website and fulfillment system use service providers including Paddle, Cloudflare, and GitHub. These providers may process technical information required to operate, secure, and deliver the service.' },
