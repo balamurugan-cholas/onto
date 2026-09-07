@@ -4,6 +4,7 @@ type Options = {
   now?: () => number
   sleep?: (ms: number) => Promise<void>
   onProgress?: (message: string) => void
+  token?: string
 }
 
 // Checkout completion can precede the verified webhook and KV visibility.
@@ -20,7 +21,7 @@ export async function waitForDownload(worker: string, transactionId: string, new
     let result: Claim
     try {
       response = await fetcher(`${worker}/claim`, {
-        method: 'POST', headers: { 'content-type': 'application/json' },
+        method: 'POST', headers: { 'content-type': 'application/json', ...(options.token ? { authorization: `Bearer ${options.token}` } : {}) },
         body: JSON.stringify({ transactionId }),
         signal: AbortSignal.timeout(Math.max(1, Math.min(15000, deadline - now()))),
       })

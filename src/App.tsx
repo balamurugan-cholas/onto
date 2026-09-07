@@ -98,6 +98,7 @@ export default function App() {
     try {
         const result = await waitForDownload(VPLAY_DOWNLOAD_WORKER, transactionId, newPurchase, {
           onProgress: setDownloadStatus,
+          token: accountToken(),
         })
         if (result.downloadUrl) {
           savePurchase(transactionId, undefined, paymentConfig.environment)
@@ -168,6 +169,11 @@ export default function App() {
 
     return () => window.removeEventListener('onto:paddle-checkout-completed', handleCompleted)
   }, [])
+
+  useEffect(() => {
+    if (!account || !completedTransactionId) return
+    accountApi(VPLAY_DOWNLOAD_WORKER, '/library/link-purchase', { method: 'POST', body: JSON.stringify({ transactionId: completedTransactionId }) }).catch(() => {})
+  }, [account, completedTransactionId])
 
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0)
 
