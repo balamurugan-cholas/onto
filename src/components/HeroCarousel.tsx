@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { products } from '../data/products'
 import { ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
@@ -42,6 +42,8 @@ const arrowBtn: React.CSSProperties = {
   flexShrink: 0,
 }
 
+const MOBILE_SWIPE_THRESHOLD = 48
+
 export default function HeroCarousel({
   onAddToCart,
   showRetryDownload,
@@ -52,6 +54,7 @@ export default function HeroCarousel({
   const [transitioning, setTransitioning] = useState(false)
   const [slideDir, setSlideDir] = useState<'left' | 'right'>('left')
   const { isMobile } = useResponsive()
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
 
   const go = useCallback(
     (dir: 'prev' | 'next') => {
@@ -82,9 +85,33 @@ export default function HeroCarousel({
   const p = products[current]
   const canDownload = showRetryDownload && p.id === 2
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (!isMobile || event.touches.length !== 1) return
+    const touch = event.touches[0]
+    touchStart.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!isMobile || !start || event.changedTouches.length !== 1) return
+
+    const touch = event.changedTouches[0]
+    const deltaX = touch.clientX - start.x
+    const deltaY = touch.clientY - start.y
+    if (Math.abs(deltaX) < MOBILE_SWIPE_THRESHOLD || Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return
+
+    go(deltaX < 0 ? 'next' : 'prev')
+  }
+
   return (
     <>
-      <main style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <main
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={() => { touchStart.current = null }}
+        style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, touchAction: isMobile ? 'pan-y' : 'auto' }}
+      >
         <ProductSlide
           product={p}
           visible={!transitioning}
@@ -98,6 +125,7 @@ export default function HeroCarousel({
 
       {/* Bottom bar: (dots on desktop / CTA + Price on mobile) + arrows */}
       <div
+        className="mobile-purchase-bar"
         style={{
           position: 'relative',
           zIndex: 10,

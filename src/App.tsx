@@ -246,9 +246,10 @@ export default function App() {
 
   return (
     <div
+      className="app-shell"
       style={{
         width: '100vw',
-        height: '100vh',
+        height: '100dvh',
         overflow: 'hidden',
         background: '#EDEDED',
         display: 'flex',
