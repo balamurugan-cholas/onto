@@ -2,7 +2,7 @@
 import { ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
 
-export type View = 'store' | 'cart' | 'contact' | 'testimonials' | 'checkout' | 'terms' | 'privacy' | 'refund'
+export type View = 'store' | 'cart' | 'contact' | 'testimonials' | 'checkout' | 'terms' | 'privacy' | 'refund' | 'library'
 
 interface NavbarProps {
   view: View
@@ -11,6 +11,9 @@ interface NavbarProps {
   onContactClick: () => void
   onTestimonialsClick: () => void
   onBackClick: () => void
+  onAccountClick: () => void
+  onLibraryClick: () => void
+  signedIn: boolean
 }
 
 function NavIconButton({
@@ -112,7 +115,7 @@ function ContactIcon() {
 
 const DIVIDER = null
 
-export default function Navbar({ view, cartCount, onCartClick, onContactClick, onTestimonialsClick, onBackClick }: NavbarProps) {
+export default function Navbar({ view, cartCount, onCartClick, onContactClick, onTestimonialsClick, onBackClick, onAccountClick, onLibraryClick, signedIn }: NavbarProps) {
   const { isMobile } = useResponsive()
   const isSubView = view !== 'store'
 
@@ -166,6 +169,9 @@ export default function Navbar({ view, cartCount, onCartClick, onContactClick, o
           </button>
         ) : (
           <>
+            <NavIconButton onClick={signedIn ? onLibraryClick : onAccountClick} active={view === 'library'} title={signedIn ? 'Library' : 'Sign in'}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            </NavIconButton>
             <NavIconButton onClick={onTestimonialsClick} active={view === 'testimonials'} title="Testimonials">
               <TestimonialsIcon />
             </NavIconButton>

@@ -11,7 +11,7 @@ interface CartPageProps {
   cartItems: CartItem[]
   onUpdateQty: (productId: number, qty: number) => void
   onRemove: (productId: number) => void
-  onCheckout: () => void
+  onCheckout: () => void | Promise<void>
   downloadPlatform: DownloadPlatform
 }
 

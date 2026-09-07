@@ -20,7 +20,7 @@ const policies: Record<LegalView, { title: string; sections: Array<{ heading: st
   privacy: {
     title: 'Privacy Policy',
     sections: [
-      { heading: 'Information we handle', body: 'ONTO may receive information you provide when contacting support and limited purchase information needed to deliver access, such as a Paddle transaction identifier, product identifier, and selected installer platform. We do not receive or store your complete payment-card details.' },
+      { heading: 'Information we handle', body: 'ONTO stores the email address and securely hashed password you provide for your account, registered device identifiers used to enforce the two-device limit, and limited purchase information needed to provide your library and downloads. We do not receive or store your complete payment-card details.' },
       { heading: 'Payments', body: 'Paddle processes checkout, taxes, payment details, receipts, and related customer information as our merchant of record. Paddle handles that information under its own privacy policy.' },
       { heading: 'How information is used', body: 'We use information only to verify purchases, deliver VPlay, provide support, prevent fraud or abuse, maintain the service, and comply with legal obligations.' },
       { heading: 'Service providers', body: 'The website and fulfillment system use service providers including Paddle, Cloudflare, and GitHub. These providers may process technical information required to operate, secure, and deliver the service.' },

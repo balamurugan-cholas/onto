@@ -13,6 +13,9 @@ import { getPaddleConfig } from './lib/paddleConfig'
 import { waitForDownload } from './lib/downloadClaim'
 import PlatformModal, { type DownloadPlatform } from './components/PlatformModal'
 import { detectDownloadPlatform } from './lib/platformDetection'
+import AccountModal from './components/AccountModal'
+import LibraryPage from './components/LibraryPage'
+import { accountApi, accountToken, clearAccount, type AccountUser } from './lib/account'
 
 const paymentConfig = getPaddleConfig(import.meta.env.MODE, import.meta.env.VITE_SANDBOX_WORKER_URL || '')
 const VPLAY_DOWNLOAD_WORKER = paymentConfig.workerUrl
@@ -36,6 +39,13 @@ export default function App() {
   const [platformModalOpen, setPlatformModalOpen] = useState(false)
   const [pendingProductId, setPendingProductId] = useState<number | null>(null)
   const [downloadPlatform, setDownloadPlatform] = useState<DownloadPlatform>(() => detectDownloadPlatform() || 'windows')
+  const [account, setAccount] = useState<AccountUser | null>(null)
+  const [accountOpen, setAccountOpen] = useState(false)
+
+  useEffect(() => {
+    if (!accountToken() || !VPLAY_DOWNLOAD_WORKER) return
+    accountApi<{ user: AccountUser }>(VPLAY_DOWNLOAD_WORKER, '/auth/me').then(r => setAccount(r.user)).catch(() => clearAccount())
+  }, [])
 
   const activateLocalAgent = async (licenseKey: string) => {
     const deadline = Date.now() + 10 * 60 * 1000
@@ -197,7 +207,8 @@ export default function App() {
     setCartItems((prev) => prev.filter((i) => i.productId !== productId))
   }
 
-  const openPaddleCheckout = () => {
+  const openPaddleCheckout = async () => {
+    if (!account) { setAccountOpen(true); return }
     if (paymentConfig.sandbox && !VPLAY_DOWNLOAD_WORKER) {
       window.alert('Sandbox checkout is not ready: configure the separate sandbox download Worker first.')
       return
@@ -212,9 +223,12 @@ export default function App() {
       window.alert('VPlay is not in your cart.')
       return
     }
+    let ownership: { accountId: string; expires: number; proof: string }
+    try { ownership = await accountApi(VPLAY_DOWNLOAD_WORKER, '/checkout/account-proof', { method: 'POST' }) }
+    catch (error) { window.alert(error instanceof Error ? error.message : 'Please sign in again.'); return }
     paddle.Checkout.open({
       items: [{ priceId: paymentConfig.priceId, quantity: 1 }],
-      customData: { product: 'vplay', source: 'onto-website', platform: downloadPlatform },
+      customData: { product: 'vplay', source: 'onto-website', platform: downloadPlatform, accountId: ownership.accountId, accountExpires: String(ownership.expires), accountProof: ownership.proof },
       settings: {
         displayMode: 'overlay',
         theme: 'light',
@@ -263,6 +277,9 @@ export default function App() {
         onContactClick={() => navigate('contact')}
         onTestimonialsClick={() => navigate('testimonials')}
         onBackClick={() => navigate('store')}
+        onAccountClick={() => setAccountOpen(true)}
+        onLibraryClick={() => navigate('library')}
+        signedIn={Boolean(account)}
       />
 
       {view === 'store' && (
@@ -284,6 +301,14 @@ export default function App() {
       )}
       {view === 'contact' && <ContactPage />}
       {view === 'testimonials' && <TestimonialsPage />}
+      {view === 'library' && account && <LibraryPage worker={VPLAY_DOWNLOAD_WORKER} email={account.email} onSignOut={async () => {
+        try { await accountApi(VPLAY_DOWNLOAD_WORKER, '/auth/logout', { method: 'POST' }) } catch {}
+        clearAccount(); setAccount(null); navigate('store')
+      }} onDownload={async platform => {
+        const result = await accountApi<{ downloadUrl: string; licenseKey?: string }>(VPLAY_DOWNLOAD_WORKER, '/library/download', { method: 'POST', body: JSON.stringify({ platform }) })
+        if (result.licenseKey && !paymentConfig.sandbox) void activateLocalAgent(result.licenseKey)
+        window.location.assign(result.downloadUrl)
+      }} />}
       {LEGAL_VIEWS.includes(view as LegalView) && <LegalPage type={view as LegalView} />}
 
       <LegalFooter onNavigate={navigate} marqueeNames={view === 'store' ? products.map((product) => product.slug) : undefined} />
@@ -293,6 +318,7 @@ export default function App() {
         onClose={() => { setPlatformModalOpen(false); setPendingProductId(null) }}
         onSelect={choosePlatform}
       />
+      <AccountModal open={accountOpen} worker={VPLAY_DOWNLOAD_WORKER} onClose={() => setAccountOpen(false)} onSignedIn={user => setAccount(user)} />
 
       {downloadStatus && (
         <div
