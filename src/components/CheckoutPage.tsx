@@ -30,7 +30,7 @@ function fieldStyle(focused: boolean): React.CSSProperties {
     color: '#111111',
     fontSize: '0.84rem',
     fontWeight: 500,
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Space Grotesk', sans-serif",
     padding: '10px 13px',
     outline: 'none',
     transition: 'border-color 0.2s',
@@ -251,7 +251,7 @@ function CountryDropdown({ value, onChange }: { value: string; onChange: (v: str
               borderRadius: '2px',
               color: '#111111',
               fontSize: '0.8rem',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Space Grotesk', sans-serif",
               outline: 'none',
             }}
           />
@@ -328,7 +328,7 @@ function InfoStep({ onNext }: { onNext: () => void }) {
       <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '4px' }}>
         <button
           type="submit"
-          style={{ padding: '11px 32px', background: '#000000', border: 'none', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'opacity 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
+          style={{ padding: '11px 32px', background: '#000000', border: 'none', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", transition: 'opacity 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
           onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.88' }}
           onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
         >
@@ -425,7 +425,7 @@ function PaymentStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
         <button
           type="button"
           onClick={onBack}
-          style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", padding: '0', display: 'flex', alignItems: 'center', gap: '6px', transition: 'color 0.2s' }}
+          style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", padding: '0', display: 'flex', alignItems: 'center', gap: '6px', transition: 'color 0.2s' }}
           onMouseEnter={(e) => { e.currentTarget.style.color = '#000000' }}
           onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.5)' }}
         >
@@ -433,7 +433,7 @@ function PaymentStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
         </button>
         <button
           type="submit"
-          style={{ padding: '11px 32px', background: '#000000', border: 'none', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'opacity 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
+          style={{ padding: '11px 32px', background: '#000000', border: 'none', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", transition: 'opacity 0.2s', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
           onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.88' }}
           onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
         >
@@ -445,7 +445,7 @@ function PaymentStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
 }
 
 function ConfirmedStep({ onOrderComplete }: { onOrderComplete: () => void }) {
-  const orderId = `ONTO-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+  const orderId = `PLUGINVERSE-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
 
   useEffect(() => {
     const timer = setTimeout(() => onOrderComplete(), 3000)

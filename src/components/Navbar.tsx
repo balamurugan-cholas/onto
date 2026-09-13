@@ -1,4 +1,3 @@
-// OntoLogo import removed — using store-logo.png image instead
 import { ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
 
@@ -131,7 +130,7 @@ export default function Navbar({ view, cartCount, onCartClick, onContactClick, o
         flexShrink: 0,
       }}
     >
-      <img src={`${import.meta.env.BASE_URL}store-logo.png`} alt="ONTO" style={{ height: isMobile ? '28px' : '36px', width: 'auto' }} />
+      <img className="pluginverse-logo" src={`${import.meta.env.BASE_URL}pluginverse-logo.png`} alt="Pluginverse" style={{ height: isMobile ? '30px' : '40px', width: 'auto' }} />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
         {isSubView ? (
@@ -149,7 +148,7 @@ export default function Navbar({ view, cartCount, onCartClick, onContactClick, o
               letterSpacing: '0.06em',
               padding: isMobile ? '6px 12px' : '7px 16px',
               cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Space Grotesk', sans-serif",
               transition: 'all 0.2s',
               borderRadius: '2px',
             }}

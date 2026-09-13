@@ -11,8 +11,6 @@ import { products } from './data/products'
 import { loadPurchase, savePurchase, validTransactionId } from './lib/purchaseStorage'
 import { getPaddleConfig } from './lib/paddleConfig'
 import { waitForDownload } from './lib/downloadClaim'
-import PlatformModal, { type DownloadPlatform } from './components/PlatformModal'
-import { detectDownloadPlatform } from './lib/platformDetection'
 import AccountModal from './components/AccountModal'
 import LibraryPage from './components/LibraryPage'
 import { accountApi, accountToken, clearAccount, type AccountUser } from './lib/account'
@@ -36,9 +34,7 @@ export default function App() {
   const [completedTransactionId, setCompletedTransactionId] = useState(() => loadPurchase(undefined, paymentConfig.environment))
   const downloadBusy = useRef(false)
   const [downloadInProgress, setDownloadInProgress] = useState(false)
-  const [platformModalOpen, setPlatformModalOpen] = useState(false)
-  const [pendingProductId, setPendingProductId] = useState<number | null>(null)
-  const [downloadPlatform, setDownloadPlatform] = useState<DownloadPlatform>(() => detectDownloadPlatform() || 'windows')
+  const downloadPlatform = 'windows' as const
   const [account, setAccount] = useState<AccountUser | null>(null)
   const [accountOpen, setAccountOpen] = useState(false)
 
@@ -187,22 +183,7 @@ export default function App() {
   }
 
   const addToCart = (productId: number) => {
-    const detectedPlatform = detectDownloadPlatform()
-    if (detectedPlatform) {
-      setDownloadPlatform(detectedPlatform)
-      commitToCart(productId)
-      return
-    }
-    setPendingProductId(productId)
-    setPlatformModalOpen(true)
-  }
-
-  const choosePlatform = (platform: DownloadPlatform) => {
-    if (pendingProductId === null) return
-    setDownloadPlatform(platform)
-    commitToCart(pendingProductId)
-    setPendingProductId(null)
-    setPlatformModalOpen(false)
+    commitToCart(productId)
   }
 
   const updateQty = (productId: number, qty: number) => {
@@ -246,12 +227,12 @@ export default function App() {
 
   return (
     <div
-      className="app-shell"
+      className="app-shell pluginverse-theme"
       style={{
         width: '100vw',
         height: '100dvh',
         overflow: 'hidden',
-        background: '#EDEDED',
+        background: '#FFFFFF',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -262,7 +243,7 @@ export default function App() {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse 65% 55% at 70% 45%, rgba(0,0,0,0.015) 0%, transparent 70%)',
+          background: 'transparent',
           pointerEvents: 'none',
         }}
       />
@@ -271,7 +252,7 @@ export default function App() {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse 100% 60% at 50% 0%, rgba(0,0,0,0.02) 0%, transparent 60%)',
+          background: 'transparent',
           pointerEvents: 'none',
         }}
       />
@@ -303,7 +284,6 @@ export default function App() {
           onUpdateQty={updateQty}
           onRemove={removeItem}
           onCheckout={openPaddleCheckout}
-          downloadPlatform={downloadPlatform}
         />
       )}
       {view === 'contact' && <ContactPage />}
@@ -320,11 +300,6 @@ export default function App() {
 
       <LegalFooter onNavigate={navigate} marqueeNames={view === 'store' ? products.map((product) => product.slug) : undefined} />
 
-      <PlatformModal
-        open={platformModalOpen}
-        onClose={() => { setPlatformModalOpen(false); setPendingProductId(null) }}
-        onSelect={choosePlatform}
-      />
       <AccountModal open={accountOpen} worker={VPLAY_DOWNLOAD_WORKER} onClose={() => setAccountOpen(false)} onSignedIn={user => setAccount(user)} />
 
       {downloadStatus && (

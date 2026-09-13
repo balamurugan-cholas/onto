@@ -162,7 +162,7 @@ export default function HeroCarousel({
                 fontWeight: 600,
                 letterSpacing: '0.04em',
                 cursor: p.comingSoon ? 'default' : 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Space Grotesk', sans-serif",
                 transition: 'opacity 0.2s',
                 opacity: p.comingSoon ? 0.6 : 1,
                 borderRadius: '2px',

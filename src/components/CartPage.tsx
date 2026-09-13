@@ -1,6 +1,5 @@
 import { products, ACCENT } from '../data/products'
 import { useResponsive } from '../hooks/useResponsive'
-import type { DownloadPlatform } from './PlatformModal'
 
 interface CartItem {
   productId: number
@@ -12,7 +11,6 @@ interface CartPageProps {
   onUpdateQty: (productId: number, qty: number) => void
   onRemove: (productId: number) => void
   onCheckout: () => void | Promise<void>
-  downloadPlatform: DownloadPlatform
 }
 
 function EmptyState() {
@@ -27,7 +25,7 @@ function EmptyState() {
   )
 }
 
-export default function CartPage({ cartItems, onUpdateQty, onRemove, onCheckout, downloadPlatform }: CartPageProps) {
+export default function CartPage({ cartItems, onUpdateQty, onRemove, onCheckout }: CartPageProps) {
   const { isMobile } = useResponsive()
 
   const lineItems = cartItems
@@ -60,7 +58,7 @@ export default function CartPage({ cartItems, onUpdateQty, onRemove, onCheckout,
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
           <span style={{ fontFamily: "'Anton', sans-serif", fontSize: isMobile ? '0.95rem' : '1.05rem', color: '#111111', letterSpacing: '-0.01em' }}>{p.slug}</span>
-          <span style={{ fontSize: '0.67rem', color: 'rgba(0,0,0,0.55)', fontWeight: 500, letterSpacing: '0.04em' }}>{p.host} · {downloadPlatform === 'mac' ? 'macOS' : 'Windows'} · {p.license}</span>
+          <span style={{ fontSize: '0.67rem', color: 'rgba(0,0,0,0.55)', fontWeight: 500, letterSpacing: '0.04em' }}>{p.host} · Windows · {p.license}</span>
         </div>
       </div>
 
@@ -116,7 +114,7 @@ export default function CartPage({ cartItems, onUpdateQty, onRemove, onCheckout,
       </div>
       <button
         onClick={onCheckout}
-        style={{ display: 'block', width: 'calc(100% - 36px)', margin: '0 18px 18px', padding: '11px', background: '#000000', border: 'none', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'opacity 0.2s' }}
+        style={{ display: 'block', width: 'calc(100% - 36px)', margin: '0 18px 18px', padding: '11px', background: '#000000', border: 'none', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", transition: 'opacity 0.2s' }}
         onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.88' }}
         onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
       >

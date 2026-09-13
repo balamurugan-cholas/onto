@@ -163,7 +163,7 @@ export default function TestimonialsPage() {
                     fontWeight: 600,
                     letterSpacing: '0.06em',
                     cursor: 'pointer',
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Space Grotesk', sans-serif",
                     borderRadius: '2px',
                     transition: 'all 0.2s',
                     whiteSpace: 'nowrap',
