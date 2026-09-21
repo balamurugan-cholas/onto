@@ -24,6 +24,8 @@ interface CartItem {
   qty: number
 }
 
+type LibraryProduct = { id: string; name: string; purchasedAt: number }
+
 const LEGAL_VIEWS: LegalView[] = ['terms', 'privacy', 'refund']
 
 export default function App() {
@@ -38,16 +40,59 @@ export default function App() {
   const [downloadInProgress, setDownloadInProgress] = useState(false)
   const downloadPlatform = 'windows' as const
   const [account, setAccount] = useState<AccountUser | null>(null)
+  const [ownedProductIds, setOwnedProductIds] = useState<string[]>([])
+  const [libraryProducts, setLibraryProducts] = useState<LibraryProduct[]>([])
+  const [ownershipLoading, setOwnershipLoading] = useState(() => Boolean(accountToken() && VPLAY_DOWNLOAD_WORKER))
   const [accountOpen, setAccountOpen] = useState(false)
   const [videoTourProduct, setVideoTourProduct] = useState<Product | null>(null)
   const [detailsProduct, setDetailsProduct] = useState<Product | null>(null)
 
   useEffect(() => {
     if (!accountToken() || !VPLAY_DOWNLOAD_WORKER) return
-    accountApi<{ user: AccountUser }>(VPLAY_DOWNLOAD_WORKER, '/auth/me')
-      .then((r) => setAccount(r.user))
-      .catch(() => clearAccount())
+    Promise.all([
+      accountApi<{ user: AccountUser }>(VPLAY_DOWNLOAD_WORKER, '/auth/me'),
+      accountApi<{ products: LibraryProduct[] }>(VPLAY_DOWNLOAD_WORKER, '/library'),
+    ])
+      .then(([authResult, libraryResult]) => {
+        setAccount(authResult.user)
+        setLibraryProducts(libraryResult.products)
+        setOwnedProductIds(libraryResult.products.map((product) => product.id.toLowerCase()))
+        setOwnershipLoading(false)
+      })
+      .catch(() => {
+        clearAccount()
+        setOwnershipLoading(false)
+      })
   }, [])
+
+  useEffect(() => {
+    if (!account || !VPLAY_DOWNLOAD_WORKER) {
+      setOwnedProductIds([])
+      return
+    }
+    if (libraryProducts.length > 0) {
+      setOwnershipLoading(false)
+      return
+    }
+    let cancelled = false
+    setOwnershipLoading(true)
+    accountApi<{ products: LibraryProduct[] }>(VPLAY_DOWNLOAD_WORKER, '/library')
+      .then((result) => {
+        if (!cancelled) {
+          setLibraryProducts(result.products)
+          setOwnedProductIds(result.products.map((product) => product.id.toLowerCase()))
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setOwnedProductIds([])
+      })
+      .finally(() => {
+        if (!cancelled) setOwnershipLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [account])
 
   const activateLocalAgent = async (licenseKey: string) => {
     const deadline = Date.now() + 10 * 60 * 1000
@@ -196,7 +241,13 @@ export default function App() {
     accountApi(VPLAY_DOWNLOAD_WORKER, '/library/link-purchase', {
       method: 'POST',
       body: JSON.stringify({ transactionId: completedTransactionId }),
-    }).catch(() => {})
+    })
+      .then(() => accountApi<{ products: LibraryProduct[] }>(VPLAY_DOWNLOAD_WORKER, '/library'))
+      .then((result) => {
+        setLibraryProducts(result.products)
+        setOwnedProductIds(result.products.map((product) => product.id.toLowerCase()))
+      })
+      .catch(() => {})
   }, [account, completedTransactionId])
 
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0)
@@ -349,6 +400,9 @@ export default function App() {
       {view === 'vplay' && (
         <ProductPage
           productId={2}
+          isOwned={ownedProductIds.includes('vplay')}
+          ownershipLoading={ownershipLoading}
+          onLibraryClick={() => navigate('library')}
           onBack={() => navigate('store')}
           onAddToCart={addToCart}
           onOpenVideoTour={(product) => setVideoTourProduct(product)}
@@ -361,6 +415,9 @@ export default function App() {
       {view === 'timelinekit' && (
         <ProductPage
           productId={1}
+          isOwned={ownedProductIds.includes('timelinekit')}
+          ownershipLoading={ownershipLoading}
+          onLibraryClick={() => navigate('library')}
           onBack={() => navigate('store')}
           onAddToCart={addToCart}
           onOpenVideoTour={(product) => setVideoTourProduct(product)}
@@ -387,12 +444,17 @@ export default function App() {
         <LibraryPage
           worker={VPLAY_DOWNLOAD_WORKER}
           email={account.email}
+          initialProducts={libraryProducts}
+          onExplore={() => navigate('store')}
           onSignOut={async () => {
             try {
               await accountApi(VPLAY_DOWNLOAD_WORKER, '/auth/logout', { method: 'POST' })
             } catch {}
             clearAccount()
             setAccount(null)
+            setLibraryProducts([])
+            setOwnedProductIds([])
+            setOwnershipLoading(false)
             navigate('store')
           }}
           onDownload={async (productId, platform) => {
@@ -427,7 +489,10 @@ export default function App() {
         open={accountOpen}
         worker={VPLAY_DOWNLOAD_WORKER}
         onClose={() => setAccountOpen(false)}
-        onSignedIn={(user) => setAccount(user)}
+        onSignedIn={(user) => {
+          setOwnershipLoading(true)
+          setAccount(user)
+        }}
       />
 
       {/* Download Status Toast / Dialog */}

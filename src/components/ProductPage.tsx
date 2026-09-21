@@ -4,6 +4,9 @@ import { useResponsive } from '../hooks/useResponsive'
 
 interface ProductPageProps {
   productId: number
+  isOwned?: boolean
+  ownershipLoading?: boolean
+  onLibraryClick?: () => void
   onBack: () => void
   onAddToCart: (productId: number) => void
   onOpenVideoTour: (product: Product) => void
@@ -13,6 +16,9 @@ interface ProductPageProps {
 
 export default function ProductPage({
   productId,
+  isOwned = false,
+  ownershipLoading = false,
+  onLibraryClick,
   onBack,
   onAddToCart,
   onOpenVideoTour,
@@ -49,7 +55,16 @@ export default function ProductPage({
                 >
                   COMING SOON
                 </button>
-              ) : (
+              ) : ownershipLoading ? (
+                <button
+                  type="button"
+                  className="editorial-outline-btn is-primary purchase-loading-btn"
+                  disabled
+                  aria-label="Checking your library"
+                >
+                  <span className="purchase-loading-dots" aria-hidden="true"><i /><i /><i /></span>
+                </button>
+              ) : !isOwned ? (
                 <button
                   type="button"
                   className="editorial-outline-btn is-primary"
@@ -57,9 +72,17 @@ export default function ProductPage({
                 >
                   BUY NOW · ${product.price}
                 </button>
+              ) : (
+                <button
+                  type="button"
+                  className="editorial-outline-btn is-primary"
+                  onClick={onLibraryClick}
+                >
+                  OPEN LIBRARY
+                </button>
               )}
 
-              {product.tour && (
+              {!isVPlay && product.tour && (
                 <button
                   type="button"
                   className="product-hero-tour-btn"
@@ -77,8 +100,8 @@ export default function ProductPage({
               <span>{product.host.toUpperCase()}</span>
               <span>·</span>
               <span>{product.platform.toUpperCase()}</span>
-              <span>·</span>
-              <span>{product.license.toUpperCase()}</span>
+              {!isVPlay && <span>·</span>}
+              {!isVPlay && <span>{product.license.toUpperCase()}</span>}
             </div>
           </div>
 
@@ -105,61 +128,26 @@ export default function ProductPage({
 
         <div className="product-feature-rows">
           {isVPlay ? (
-            <>
-              {/* Row 1: Range Trimming */}
-              <div className="product-feature-row">
-                <div className="product-feature-media">
-                  <img
-                    src={`${import.meta.env.BASE_URL}range-trim.png`}
-                    alt="Precision Range Trimming"
-                    className="product-feature-img"
-                  />
-                </div>
-                <div className="product-feature-copy">
-                  <span className="editorial-section-tag">RANGE EXTRACTION</span>
-                  <h3 className="product-feature-heading">Precision Range Trimming</h3>
-                  <p className="product-feature-body">
-                    Pull a 5-second clip from a 12-hour video in just 15–20 seconds without downloading gigabytes of unwanted footage. Set custom in and out points with fluid scrubbing directly inside Premiere Pro before committing.
-                  </p>
-                </div>
-              </div>
-
-              {/* Row 2: Timeline Insertion */}
-              <div className="product-feature-row is-reversed">
-                <div className="product-feature-copy">
-                  <span className="editorial-section-tag">SEAMLESS IMPORT</span>
-                  <h3 className="product-feature-heading">Direct Timeline Insertion</h3>
-                  <p className="product-feature-body">
-                    Forget window switching and desktop clutter. VPlay imports downloaded videos, audio streams, and thumbnails directly into your active project bins and drops them straight onto your playhead target track.
-                  </p>
-                </div>
-                <div className="product-feature-media">
-                  <img
-                    src={`${import.meta.env.BASE_URL}timeline-insertion.png`}
-                    alt="Direct Timeline Insertion"
-                    className="product-feature-img"
-                  />
-                </div>
-              </div>
-
-              {/* Row 3: Searchable History */}
-              <div className="product-feature-row">
-                <div className="product-feature-media">
-                  <img
-                    src={`${import.meta.env.BASE_URL}download-history.png`}
-                    alt="Searchable History"
-                    className="product-feature-img"
-                  />
-                </div>
-                <div className="product-feature-copy">
-                  <span className="editorial-section-tag">ASSET MANAGEMENT</span>
-                  <h3 className="product-feature-heading">Searchable History & Re-Download</h3>
-                  <p className="product-feature-body">
-                    Every download, source URL, thumbnail, and format variant remains cataloged in a searchable panel. Re-open file directories, re-download from original sources, or search spoken moments via transcript integration.
-                  </p>
-                </div>
-              </div>
-            </>
+            <div className="vplay-demo-grid">
+              {[
+                ['vplay-link-preview.webp', 'Paste. Preview. Ready.'],
+                ['vplay-range-trim.webp', 'Trim exactly what you need.'],
+                ['vplay-download-history.webp', 'Keep every download organized.'],
+              ].map(([image, title], index) => (
+                <figure className="vplay-demo-card" key={image}>
+                  <div className="vplay-demo-window">
+                    <img
+                      src={`${import.meta.env.BASE_URL}${image}`}
+                      alt={`${title} VPlay workflow demonstration`}
+                      className="vplay-demo-animation"
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                  </div>
+                  <figcaption>{title}</figcaption>
+                </figure>
+              ))}
+            </div>
           ) : (
             <>
               {/* TimelineKit Row 1 */}
@@ -250,13 +238,30 @@ export default function ProductPage({
               <button type="button" className="editorial-outline-btn is-disabled" disabled>
                 COMING SOON
               </button>
-            ) : (
+            ) : ownershipLoading ? (
+              <button
+                type="button"
+                className="editorial-outline-btn is-primary purchase-loading-btn"
+                disabled
+                aria-label="Checking your library"
+              >
+                <span className="purchase-loading-dots" aria-hidden="true"><i /><i /><i /></span>
+              </button>
+            ) : !isOwned ? (
               <button
                 type="button"
                 className="editorial-outline-btn is-primary"
                 onClick={() => onAddToCart(product.id)}
               >
                 BUY NOW · ${product.price}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="editorial-outline-btn is-primary"
+                onClick={onLibraryClick}
+              >
+                OPEN LIBRARY
               </button>
             )}
             <button type="button" className="product-hero-back-link" style={{ marginBottom: 0, marginLeft: '8px' }} onClick={onBack}>
