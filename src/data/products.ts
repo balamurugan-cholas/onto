@@ -21,10 +21,9 @@ export const ACCENT = '#000000'
 const publicAsset = (name: string) => `${import.meta.env.BASE_URL}${name}`
 
 export const products: Product[] = [
-  /* PremiereBind is hidden until it is ready for sale.
   {
     id: 1,
-    slug: 'PREMIEREBIND.',
+    slug: 'TIMELINEKIT.',
     version: 'V1.0',
     description:
       'Save a complete timeline arrangement - clips, tracks, timing, and effects - and insert it back into any project with one shortcut.',
@@ -33,7 +32,6 @@ export const products: Product[] = [
     license: 'Lifetime',
     updates: 'Included',
     price: 19,
-    comingSoon: true,
     features: [
       'Save selections as reusable presets',
       'Insert at playhead with Start, Anchor, or End alignment',
@@ -41,9 +39,8 @@ export const products: Product[] = [
       'Organize with profiles, folders, and Audio Randomizer folders',
       'Works across projects and after restarting Premiere Pro',
     ],
-    img: publicAsset('premiere-bind.png'),
+    img: publicAsset('timelinekit.png'),
   },
-  */
   {
     id: 2,
     slug: 'VPLAY.',
@@ -108,12 +105,109 @@ export const products: Product[] = [
         ],
       },
     ],
-    comparisons: [
-      { standard: 'Open a browser, use a download site, then return to Premiere.', vplay: 'Paste and download without leaving the Premiere Pro panel.' },
-      { standard: 'Download the whole source first and trim it afterward.', vplay: 'Select the exact range before downloading - even from very long videos.' },
-      { standard: 'Import, organize, and place every file manually.', vplay: 'Auto-import, organize assets, and insert at the playhead.' },
-      { standard: 'Lose track of the original link after the file is saved.', vplay: 'Keep searchable history with source-aware redownload controls.' },
-      { standard: 'Repeat settings and cleanup work for every download.', vplay: 'Use queues, saved preferences, automatic cleanup, and an integrated updater.' },
-    ],
+  },
+]
+
+export interface GridItem {
+  id: string
+  title: string
+  subtitle: string
+  tag: string
+  img: string
+  productId: number
+  category: 'workflow' | 'downloader' | 'presets'
+  description: string
+}
+
+export const showcaseGridItems: GridItem[] = [
+  {
+    id: 'range-trim',
+    title: 'Precision Range Trim',
+    subtitle: 'Video & Audio Trimming',
+    tag: '$19',
+    img: publicAsset('range-trim.png'),
+    productId: 2,
+    category: 'downloader',
+    description: 'Pull a 5-second clip from a 12-hour video in 15–20 seconds without downloading gigabytes of unwanted footage.',
+  },
+  {
+    id: 'timeline-insert',
+    title: 'Timeline Direct Insertion',
+    subtitle: 'Premiere Pro Timeline',
+    tag: 'Included',
+    img: publicAsset('timeline-insertion.png'),
+    productId: 2,
+    category: 'workflow',
+    description: 'Import media directly into active project bins and insert onto your playhead target track automatically.',
+  },
+  {
+    id: 'download-history',
+    title: 'Searchable History Vault',
+    subtitle: 'Asset Management & Sync',
+    tag: 'Included',
+    img: publicAsset('download-history.png'),
+    productId: 2,
+    category: 'downloader',
+    description: 'Every download, URL, thumbnail, and format stays cataloged with one-click re-download and folder access.',
+  },
+  {
+    id: 'timelinekit-master',
+    title: 'TimelineKit Multi-Track',
+    subtitle: 'Timeline Presets',
+    tag: 'Coming Soon',
+    img: publicAsset('timelinekit.png'),
+    productId: 1,
+    category: 'presets',
+    description: 'Save complex multi-track cuts, transitions, effects, and audio sync as reusable presets.',
+  },
+  {
+    id: 'smart-paste',
+    title: 'Smart URL Auto-Paste',
+    subtitle: 'Workflow Automation',
+    tag: 'Included',
+    img: publicAsset('vplay.png'),
+    productId: 2,
+    category: 'workflow',
+    description: 'Copy any media link and VPlay detects and pastes it into the panel automatically with instant preview.',
+  },
+  {
+    id: 'hotkey-engine',
+    title: 'Global Hotkey Execution',
+    subtitle: 'Unfocused Panel Trigger',
+    tag: 'Included',
+    img: publicAsset('timelinekit.png'),
+    productId: 1,
+    category: 'presets',
+    description: 'Trigger preset insertion using custom keyboard shortcuts even while the panel is not focused.',
+  },
+  {
+    id: 'transcript-search',
+    title: 'Transcript Moment Finder',
+    subtitle: 'Dialogue & Audio Sync',
+    tag: 'Included',
+    img: publicAsset('range-trim.png'),
+    productId: 2,
+    category: 'workflow',
+    description: 'Search spoken words in supported video transcripts and jump straight to the exact clip moment.',
+  },
+  {
+    id: 'audio-randomizer',
+    title: 'Audio Randomizer Bins',
+    subtitle: 'SFX & Foley Organization',
+    tag: 'Included',
+    img: publicAsset('timelinekit.png'),
+    productId: 1,
+    category: 'presets',
+    description: 'Randomize variation sound effects and foley assets seamlessly into your timeline.',
+  },
+  {
+    id: 'vplay-studio',
+    title: 'VPlay All-In-One Panel',
+    subtitle: 'Full Extension Suite',
+    tag: '$19',
+    img: publicAsset('vplay-hero-pluginverse.png'),
+    productId: 2,
+    category: 'downloader',
+    description: 'The definitive media downloader and timeline companion built natively for Premiere Pro.',
   },
 ]

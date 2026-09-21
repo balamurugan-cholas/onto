@@ -20,8 +20,32 @@ function FeatureGroupVisual({ index }: { index: number }) {
   return <div className="feature-group-visual feature-history-visual" aria-hidden="true"><div className="mini-history-rows"><span><i /><b /></span><span><i /><b /></span><span><i /><b /></span></div><div className="mini-update"><b>UPDATE</b><span><i /></span></div></div>
 }
 
-function ProductDeepDive({ product }: { product: Product }) {
+function ProductDeepDive({ product, visual = false }: { product: Product; visual?: boolean }) {
   if (!product.tour && !product.featureGroups?.length && !product.comparisons?.length) return null
+  if (visual) {
+    const stories = [
+      { title: 'Download only what you need', copy: 'Choose video, audio, thumbnails, quality, or one exact section.', visual: 0 },
+      { title: 'Straight into Premiere Pro', copy: 'VPlay imports, organizes, and places media at your active playhead.', visual: 1 },
+      { title: 'Clip with precision', copy: 'Set In and Out points or jump to a spoken moment from the transcript.', visual: 2 },
+      { title: 'Never lose a download', copy: 'Search history, reopen files, and download again from the source.', visual: 3 },
+    ]
+    return <div className="visual-product-story">
+      {product.tour && <figure className="visual-tour">
+        <video src={product.tour.video} aria-label="VPlay Premiere Pro panel workflow demonstration" autoPlay muted loop playsInline preload="metadata" />
+        <figcaption><span>SEE VPLAY IN ACTION</span><h3>One panel. Link to timeline.</h3><p>Paste, preview, clip, and import without leaving Premiere Pro.</p></figcaption>
+      </figure>}
+      <section className="visual-story-grid" aria-label="VPlay capabilities">
+        {stories.map((story) => <article className="visual-story-card" key={story.title}>
+          <div className="visual-story-animation"><FeatureGroupVisual index={story.visual} /></div>
+          <div className="visual-story-copy"><h3>{story.title}</h3><p>{story.copy}</p></div>
+        </article>)}
+      </section>
+      <div className="visual-fast-path">
+        <div className="visual-fast-path-track" aria-hidden="true"><i/><i/><i/><b/></div>
+        <div><span>THE SHORTER WORKFLOW</span><h3>No browser tabs. No manual importing.</h3><p>Paste link&nbsp; → &nbsp;VPlay&nbsp; → &nbsp;Premiere timeline.</p></div>
+      </div>
+    </div>
+  }
   return (
     <div className="product-deep-dive">
       {product.tour && <figure className="product-tour">
@@ -120,13 +144,12 @@ export default function ProductSlide({
     return (
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         {/* Image banner — fixed, not scrollable */}
-        <div style={{ position: 'relative', width: '100%', height: '180px', flexShrink: 0, ...imgStyle }}>
+        <div style={{ position: 'relative', width: '100%', height: '225px', flexShrink: 0, overflow: 'hidden', ...imgStyle }}>
           <img
             src={p.img}
             alt={p.slug}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%' }}
           />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(237,237,237,0.95) 100%)' }} />
         </div>
 
         {/* Title + version — fixed, not scrollable */}
@@ -157,19 +180,7 @@ export default function ProductSlide({
             ))}
           </div>
 
-          {/* Features */}
-          <div className="product-primary-features" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <h3 style={{ color: '#000000', fontWeight: 700, fontSize: '0.8rem', margin: 0 }}>Features</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {p.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'rgba(0,0,0,0.82)', fontSize: '0.75rem', fontWeight: 500, lineHeight: 1.5 }}>
-                  <span style={{ color: '#000000', flexShrink: 0, fontSize: '0.5rem', marginTop: '3px' }}>●</span>
-                  {f}
-                </div>
-              ))}
-            </div>
-          </div>
-          <ProductDeepDive product={p} />
+          <ProductDeepDive product={p} visual />
         </div>
       </div>
     )
@@ -201,17 +212,7 @@ export default function ProductSlide({
               </div>
             ))}
           </div>
-          <div className="product-primary-features" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <h3 style={{ color: '#000000', fontWeight: 700, fontSize: '0.82rem', margin: 0 }}>Features</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 24px' }}>
-              {p.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', color: 'rgba(0,0,0,0.82)', fontSize: '0.75rem', fontWeight: 500, lineHeight: 1.5 }}>
-                  <span style={{ color: '#000000', flexShrink: 0, fontSize: '0.5rem', marginTop: '3px' }}>●</span>{f}
-                </div>
-              ))}
-            </div>
-          </div>
-          <ProductDeepDive product={p} />
+          <ProductDeepDive product={p} visual />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
             <span style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.2rem', color: '#111111' }}>{p.comingSoon ? '' : `$${p.price}`}</span>
             <button onClick={onAddToCart} disabled={actionDisabled} style={{ padding: '9px 24px', border: '1.5px solid #000000', background: 'transparent', color: '#000000', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.06em', cursor: actionDisabled ? 'default' : 'pointer', fontFamily: "'Space Grotesk', sans-serif", transition: 'all 0.2s', opacity: actionDisabled ? 0.6 : 1 }}>
@@ -247,17 +248,7 @@ export default function ProductSlide({
               </div>
             ))}
           </div>
-          <div className="product-primary-features" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <h3 style={{ color: '#000000', fontWeight: 700, fontSize: '0.85rem', margin: 0, letterSpacing: '0.02em' }}>Features</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 32px' }}>
-              {p.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'rgba(0,0,0,0.82)', fontSize: '0.78rem', fontWeight: 500, lineHeight: 1.5 }}>
-                  <span style={{ color: '#000000', flexShrink: 0, marginTop: '2px', fontSize: '0.55rem' }}>●</span>{f}
-                </div>
-              ))}
-            </div>
-          </div>
-          <ProductDeepDive product={p} />
+          <ProductDeepDive product={p} visual />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px' }}>
           <span style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.6rem', color: '#111111' }}>{p.comingSoon ? '' : `$${p.price}`}</span>

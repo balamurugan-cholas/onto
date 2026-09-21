@@ -10,6 +10,7 @@ export function getPaddleConfig(mode: string, sandboxWorker = '') {
     environment: sandbox ? 'sandbox' as const : 'live' as const,
     token: sandbox ? 'test_5b12816b8b46c3cb81bff67785c' : 'live_54ff1764490ca5baad198bbae59',
     priceId: sandbox ? 'pri_01m14cd2ca834jewqsqt75w1sz' : 'pri_01m15mhh168qw8gxjs6fcb6mxw',
+    timelineKitPriceId: sandbox ? 'pri_01m14cd2ca834jewqsqt75w1sz' : 'pri_01m2zxyztb4f21318p6dmjap46',
     workerUrl: sandbox ? worker : liveWorker,
     activationStorageKey: sandbox ? 'vplayActivationKey:sandbox' : 'vplayActivationKey',
   }

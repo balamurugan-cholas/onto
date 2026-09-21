@@ -18,9 +18,9 @@ export default function Marquee({ names }: MarqueeProps) {
         flexShrink: 0,
       }}
     >
-      <div className="marquee-track" style={{ display: 'flex', alignItems: 'center', width: 'max-content', flexShrink: 0 }}>
+      <div className="marquee-track" style={{ display: 'flex', alignItems: 'center', width: 'max-content', height: '100%', flexShrink: 0 }}>
         {[0, 1].map((half) => (
-          <div key={half} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          <div key={half} style={{ display: 'flex', alignItems: 'center', height: '100%', flexShrink: 0 }}>
             {Array.from({ length: 20 }).map((_, i) => (
               <span
                 key={i}
@@ -29,6 +29,7 @@ export default function Marquee({ names }: MarqueeProps) {
                   fontSize: '0.75rem',
                   color: '#FFFFFF',
                   letterSpacing: '0.12em',
+                  lineHeight: 1,
                   whiteSpace: 'nowrap',
                   padding: '0 18px',
                 }}
